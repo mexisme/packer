@@ -31,8 +31,8 @@ to files, URLS for ISOs and checksums.
   [
     {
       "type": "qemu",
-      "iso_url": "http://mirror.raystedman.net/centos/6/isos/x86_64/CentOS-6.5-x86_64-minimal.iso",
-      "iso_checksum": "0d9dc37b5dd4befa1c440d2174e88a87",
+      "iso_url": "http://mirror.raystedman.net/centos/6/isos/x86_64/CentOS-6.8-x86_64-minimal.iso",
+      "iso_checksum": "0ca12fe5f28c2ceed4f4084b41ff8a0b",
       "iso_checksum_type": "md5",
       "output_directory": "output_centos_tdhtest",
       "shutdown_command": "shutdown -P now",
@@ -167,7 +167,7 @@ Linux server and have not enabled X11 forwarding (`ssh -X`).
 -   `floppy_dirs` (array of strings) - A list of directories to place onto
     the floppy disk recursively. This is similar to the `floppy_files` option
     except that the directory structure is preserved. This is useful for when
-    your floppy disk includes drivers or if you just want to organize it's 
+    your floppy disk includes drivers or if you just want to organize it's
     contents as a hierarchy. Wildcard characters (\*, ?, and \[\]) are allowed.
 
 -   `format` (string) - Either "qcow2" or "raw", this specifies the output
@@ -235,6 +235,10 @@ Linux server and have not enabled X11 forwarding (`ssh -X`).
     strings makes up a command line switch that overrides matching default
     switch/value pairs. Any value specified as an empty string is ignored. All
     values after the switch are concatenated with no separator.
+
+-   `use_default_display` (boolean) - If true, do not pass a `-display` option
+    to qemu, allowing it to choose the default. This may be needed when running
+    under OS X.
 
 \~&gt; **Warning:** The qemu command line allows extreme flexibility, so beware
 of conflicting arguments causing failures of your run. For instance, using
@@ -415,3 +419,11 @@ CentOS 6.4 installer:
   " ks=http://10.0.2.2:{{ .HTTPPort }}/centos6-ks.cfg<enter>"
 ]
 ```
+
+### Troubleshooting
+
+Some users have experienced errors complaining about invalid keymaps. This
+seems to be related to having a `common` directory or file in the directory
+they've run Packer in, like the packer source directory. This appears to be an
+upstream bug with qemu, and the best solution for now is to remove the
+file/directory or run in another directory.

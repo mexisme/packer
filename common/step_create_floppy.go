@@ -222,7 +222,7 @@ func (s *StepCreateFloppy) Add(dircache directoryCache, src string) error {
 			return err
 		}
 
-		entry, err := d.AddFile(path.Base(src))
+		entry, err := d.AddFile(path.Base(filepath.ToSlash(src)))
 		if err != nil {
 			return err
 		}
@@ -251,9 +251,9 @@ func (s *StepCreateFloppy) Add(dircache directoryCache, src string) error {
 			_, err = dircache(filepath.ToSlash(base))
 			return err
 		}
-		directory, filename := filepath.Split(pathname)
+		directory, filename := filepath.Split(filepath.ToSlash(pathname))
 
-		base, err := removeBase(basedirectory, directory)
+		base, err := removeBase(basedirectory, filepath.FromSlash(directory))
 		if err != nil {
 			return err
 		}
@@ -337,7 +337,10 @@ func fsDirectoryCache(rootDirectory fs.Directory) directoryCache {
 	Input, Output, Error := make(chan string), make(chan fs.Directory), make(chan error)
 	go func(Error chan error) {
 		for {
-			input := path.Clean(<-Input)
+			input := <-Input
+			if len(input) > 0 {
+				input = path.Clean(input)
+			}
 
 			// found a directory, so yield it
 			res, ok := cache[input]
@@ -350,7 +353,7 @@ func fsDirectoryCache(rootDirectory fs.Directory) directoryCache {
 			// directory not cached, so start at the root and walk each component
 			// creating them if they're not in cache
 			var entry fs.Directory
-			for i, _ := range component {
+			for i := range component {
 
 				// join all of our components into a key
 				path := strings.Join(component[:i], "/")

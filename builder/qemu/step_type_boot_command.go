@@ -144,6 +144,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 	special["<rightShift>"] = 0xFFE2
 
 	shiftedChars := "~!@#$%^&*()_+{}|:\"<>?"
+	waitRe := regexp.MustCompile(`^<wait([0-9hms]+)>`)
 
 	// TODO(mitchellh): Ripe for optimizations of some point, perhaps.
 	for len(original) > 0 {
@@ -165,7 +166,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<leftCtrlOn>") {
-			keyCode = special["<leftCtrlOn>"]
+			keyCode = special["<leftCtrl>"]
 			original = original[len("<leftCtrlOn>"):]
 			log.Printf("Special code '<leftCtrlOn>' found, replacing with: %d", keyCode)
 
@@ -179,7 +180,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<leftShiftOn>") {
-			keyCode = special["<leftShiftOn>"]
+			keyCode = special["<leftShift>"]
 			original = original[len("<leftShiftOn>"):]
 			log.Printf("Special code '<leftShiftOn>' found, replacing with: %d", keyCode)
 
@@ -193,7 +194,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<leftAltOff>") {
-			keyCode = special["<leftAltOff>"]
+			keyCode = special["<leftAlt>"]
 			original = original[len("<leftAltOff>"):]
 			log.Printf("Special code '<leftAltOff>' found, replacing with: %d", keyCode)
 
@@ -207,7 +208,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<leftCtrlOff>") {
-			keyCode = special["<leftCtrlOff>"]
+			keyCode = special["<leftCtrl>"]
 			original = original[len("<leftCtrlOff>"):]
 			log.Printf("Special code '<leftCtrlOff>' found, replacing with: %d", keyCode)
 
@@ -221,7 +222,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<leftShiftOff>") {
-			keyCode = special["<leftShiftOff>"]
+			keyCode = special["<leftShift>"]
 			original = original[len("<leftShiftOff>"):]
 			log.Printf("Special code '<leftShiftOff>' found, replacing with: %d", keyCode)
 
@@ -235,7 +236,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<rightAltOn>") {
-			keyCode = special["<rightAltOn>"]
+			keyCode = special["<rightAlt>"]
 			original = original[len("<rightAltOn>"):]
 			log.Printf("Special code '<rightAltOn>' found, replacing with: %d", keyCode)
 
@@ -249,7 +250,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<rightCtrlOn>") {
-			keyCode = special["<rightCtrlOn>"]
+			keyCode = special["<rightCtrl>"]
 			original = original[len("<rightCtrlOn>"):]
 			log.Printf("Special code '<rightCtrlOn>' found, replacing with: %d", keyCode)
 
@@ -263,7 +264,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<rightShiftOn>") {
-			keyCode = special["<rightShiftOn>"]
+			keyCode = special["<rightShift>"]
 			original = original[len("<rightShiftOn>"):]
 			log.Printf("Special code '<rightShiftOn>' found, replacing with: %d", keyCode)
 
@@ -277,7 +278,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<rightAltOff>") {
-			keyCode = special["<rightAltOff>"]
+			keyCode = special["<rightAlt>"]
 			original = original[len("<rightAltOff>"):]
 			log.Printf("Special code '<rightAltOff>' found, replacing with: %d", keyCode)
 
@@ -291,7 +292,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<rightCtrlOff>") {
-			keyCode = special["<rightCtrlOff>"]
+			keyCode = special["<rightCtrl>"]
 			original = original[len("<rightCtrlOff>"):]
 			log.Printf("Special code '<rightCtrlOff>' found, replacing with: %d", keyCode)
 
@@ -305,7 +306,7 @@ func vncSendString(c *vnc.ClientConn, original string) {
 		}
 
 		if strings.HasPrefix(original, "<rightShiftOff>") {
-			keyCode = special["<rightShiftOff>"]
+			keyCode = special["<rightShift>"]
 			original = original[len("<rightShiftOff>"):]
 			log.Printf("Special code '<rightShiftOff>' found, replacing with: %d", keyCode)
 
@@ -339,16 +340,13 @@ func vncSendString(c *vnc.ClientConn, original string) {
 			continue
 		}
 
-		if strings.HasPrefix(original, "<wait") && strings.HasSuffix(original, ">") {
-			re := regexp.MustCompile(`<wait([0-9hms]+)>$`)
-			dstr := re.FindStringSubmatch(original)
-			if len(dstr) > 1 {
-				log.Printf("Special code %s found, sleeping", dstr[0])
-				if dt, err := time.ParseDuration(dstr[1]); err == nil {
-					time.Sleep(dt)
-					original = original[len(dstr[0]):]
-					continue
-				}
+		waitMatch := waitRe.FindStringSubmatch(original)
+		if len(waitMatch) > 1 {
+			log.Printf("Special code %s found, sleeping", waitMatch[0])
+			if dt, err := time.ParseDuration(waitMatch[1]); err == nil {
+				time.Sleep(dt)
+				original = original[len(waitMatch[0]):]
+				continue
 			}
 		}
 

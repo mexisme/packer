@@ -73,9 +73,6 @@ builder.
 
 ### Optional:
 
--   `api_key` (string) - The API key used to access OpenStack. Some OpenStack
-    installations require this.
-
 -   `availability_zone` (string) - The availability zone to launch the
     server in. If this isn't specified, the default enforced by your OpenStack
     cluster will be used. This may be required for some OpenStack clusters.
@@ -95,6 +92,13 @@ builder.
 
 -   `floating_ip_pool` (string) - The name of the floating IP pool to use to
     allocate a floating IP.
+
+-   `image_members` (array of strings) - List of members to add to the image
+    after creation. An image member is usually a project (also called the
+    “tenant”) with whom the image is shared.
+
+-   `image_visibility` (string) - One of "public", "private", "shared", or
+    "community".
 
 -   `insecure` (boolean) - Whether or not the connection to OpenStack can be
     done over an insecure connection. By default this is false.
@@ -122,7 +126,7 @@ builder.
 
 -   `ssh_ip_version` (string) - The IP version to use for SSH connections, valid
     values are `4` and `6`. Useful on dual stacked instances where the default
-    behaviour is to connect via whichever IP address is returned first from the
+    behavior is to connect via whichever IP address is returned first from the
     OpenStack API.
 
 -   `ssh_keypair_name` (string) - If specified, this is the key that will be
